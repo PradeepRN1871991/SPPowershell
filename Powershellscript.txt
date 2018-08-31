@@ -1,0 +1,1 @@
+Get-SPUser -Web $urlWeb | select UserLogin, @{name=”Exlicit given roles”;expression={$_.Roles}}, @{name=”Roles given via groups”;expression={$_.Groups | %{$_.Roles}}},Groups | Export-Csv -Path ""

@@ -1,0 +1,20 @@
+
+
+#Input to the script is the path of the csv file 
+#csv file should contain "Site Url" column
+# Export Path can be provided before running the script
+
+Add-PSSnapin Microsoft.sharepoint.powershell
+$information=@()
+$sitecontent=Import-Csv -Path ""
+foreach($content in $sitecontent)
+{
+$content.'Site Url'
+$site=Get-SPSite -Identity $content .'Site Url'
+$sitecollection=$site.AllWebs
+foreach($web in $sitecollection)
+{
+$information+=$web.Lists | select -ExpandProperty Fields | Where {$_.TypeDisplayName -eq "Lookup" -and $_.Hidden -eq $false -and $_.ReadOnlyField -eq $false} | select @{Name="SiteUrl"; Expression={$_.ParentList.ParentWeb.Url}},@{Name="List Name"; Expression={$_.ParentList.Title}}
+}
+}
+$information | Export-Csv -Path ""

@@ -1,0 +1,32 @@
+$userCredential = Get-Credential
+$SPOCredentials =  New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($userCredential.UserName,$userCredential.Password)
+$url=""
+$context = New-Object Microsoft.SharePoint.Client.ClientContext($url)
+ 
+$context.Credentials = $SPOcredentials
+ 
+$web = $context.Web
+$context.Load($web)
+$context.Load($web.Lists)
+$reqlist=$web.lists.GetByTitle("TestHyperLink")
+$context.Load($reqlist)
+$allitems=$reqlist.GetItems([microsoft.sharepoint.client.camlquery]::CreateAllItemsQuery())
+$context.Load($allitems)
+$context.ExecuteQuery()
+Write-Host "the list is succesfully loaded" -ForegroundColor DarkGreen
+
+foreach($item in $allitems)
+{
+[microsoft.sharepoint.client.fieldurlvalue]$urlvalue=$item["HyperLink_x0020_Test"]
+Write-Host "the url value is" $urlvalue.Url
+$finalurl=$urlvalue.Url.Remove(0,25).Replace("%2Fcns","%2Fteams")
+Write-Host "Required Url" $finalurl
+$finalurl.Length
+[microsoft.sharepoint.client.fieldurlvalue]$finalurlvalue=New-Object microsoft.sharepoint.client.fieldurlvalue
+$finalurlvalue.Description="Test"
+$finalurlvalue.Url=$finalurl
+$item["HyperLink_x0020_Test"]=[microsoft.sharepoint.client.fieldurlvalue]$finalurlvalue
+$item.Update()
+$context.ExecuteQuery()
+Write-Host "The urls are all replaced with new urls" -ForegroundColor Cyan
+}
